@@ -1,0 +1,7 @@
+- wann von DB connecten und disconnecten (Einmal beim Start der App oder pro Aufruf?)
+
+Was soll gespeichert werden?
+- Satz
+- Runde
+- Übung
+- universelle Lösung?
