@@ -5,3 +5,61 @@ Was soll gespeichert werden?
 - Runde
 - Übung
 - universelle Lösung?
+
+
+
+sets oder circuits Das ist andere ist leer
+--> ChatGPT fragen welcher begriff beides vereint
+--> oder nur sets verwenden
+--> in Übung Name + day (push, pull, leg) or type
+{
+    sets: [
+        [
+            {
+
+            },
+            {
+
+            },
+            {
+                
+            }
+        ],
+        [
+            {
+
+            },
+            {
+
+            },
+            {
+
+            }
+        ]
+    ],
+    circuits: [
+        [
+            {
+
+            },
+            {
+
+            },
+            {
+                
+            }
+        ],
+        [
+            {
+
+            },
+            {
+
+            },
+            {
+
+            }
+        ]
+    ]
+    
+}

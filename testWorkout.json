@@ -1,0 +1,60 @@
+{
+    "name": "Push day",
+    "date": "2023-01-01T10:13:48Z",
+    "exercises": [
+        {
+            "name": "Pseudo Push Up",
+            "category": "push",
+            "sets": [
+                {
+                    "reps": 7,
+                    "timestamp": "2023-01-01T10:15:48Z"
+                },
+                {
+                    "reps": 7,
+                    "timestamp": "2023-01-01T10:18:48Z"
+                },
+                {
+                    "reps": 6,
+                    "timestamp": "2023-01-01T10:22:16Z"
+                }
+            ]
+        },
+        {
+            "name": "Triceps Dips",
+            "category": "push",
+            "sets": [
+                {
+                    "reps": 10,
+                    "timestamp": "2023-01-01T10:25:48Z"
+                },
+                {
+                    "reps": 9,
+                    "timestamp": "2023-01-01T10:28:48Z"
+                },
+                {
+                    "reps": 7,
+                    "timestamp": "2023-01-01T10:32:16Z"
+                }
+            ]
+        },
+        {
+            "name": "Pike Push Up",
+            "category": "push",
+            "sets": [
+                {
+                    "reps": 9,
+                    "timestamp": "2023-01-01T10:35:48Z"
+                },
+                {
+                    "reps": 9,
+                    "timestamp": "2023-01-01T10:38:48Z"
+                },
+                {
+                    "reps": 6,
+                    "timestamp": "2023-01-01T10:42:16Z"
+                }
+            ]
+        }
+    ]
+}
