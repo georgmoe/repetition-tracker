@@ -6,7 +6,7 @@ import (
 )
 
 func WorkoutRouter(app *fiber.App) {
-	// app.Get("/user", controllers.GetAllUsers)
+	app.Get("/workout", controllers.GetAllWorkouts)
 	// app.Get("/user/:userId", controllers.GetAUser)
 	app.Post("/workout", controllers.CreateWorkout)
 	// app.Put("/user/:userId", controllers.EditAUser)

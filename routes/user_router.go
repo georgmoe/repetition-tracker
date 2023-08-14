@@ -8,8 +8,8 @@ import (
 
 func UserRouter(app *fiber.App) {
 	app.Get("/user", controllers.GetAllUsers)
-	app.Get("/user/:userId", controllers.GetAUser)
+	// app.Get("/user/:userId", controllers.GetAUser)
 	app.Post("/user", controllers.CreateUser)
-	app.Put("/user/:userId", controllers.EditAUser)
-	app.Delete("/user/:userId", controllers.DeleteAUser)
+	// app.Put("/user/:userId", controllers.EditAUser)
+	// app.Delete("/user/:userId", controllers.DeleteAUser)
 }
