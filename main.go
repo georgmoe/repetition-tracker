@@ -17,8 +17,9 @@ var userCollection *mongo.Collection = configs.GetCollection(configs.DB, "users"
 
 func main() {
 	app := fiber.New()
-	// HTTP Basic Auth
-	// hier registration route
+
+	// registration route before auth middleware
+	routes.RegistrationRouter(app)
 
 	app.Use(basicauth.New(basicauth.Config{
 		Authorizer: func(username, password string) bool {
