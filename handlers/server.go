@@ -1,38 +1,36 @@
 package handlers
 
 import (
-	"time"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
 )
 
 var (
-	store    *session.Store
-	AUTH_KEY string = "authenticated"
-	USER_ID  string = "user_id"
+	store   *session.Store
+	USER_ID string = "userId"
+	// AUTH_KEY string = "authenticated"
 )
 
 func Setup() {
 	app := fiber.New()
 	store = session.New(session.Config{
+		CookieSecure:   true,
 		CookieHTTPOnly: true,
-		// CookieSecure: true, for https
-		Expiration: 5 * time.Hour,
 	})
 
 	// registration route before auth middleware
 	app.Post("/register", Register)
 	app.Post("/login", Login)
+	app.Post("/logout", Logout)
 
-	app.Use(ReturnSessionAuth())
+	app.Use(returnSessionAuth())
 
 	// run database
 	// configs.ConnectDB()
 
 	// user routes
 	app.Get("/user", GetAllUsers)
-	app.Post("/user", CreateUser)
+	// app.Post("/user", CreateUser)
 
 	// workout routes
 	app.Get("/workout", GetAllWorkouts)

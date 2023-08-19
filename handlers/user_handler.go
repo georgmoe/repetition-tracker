@@ -7,7 +7,6 @@ import (
 
 	"github.com/georgmoe/repetition-tracker/configs"
 	"github.com/georgmoe/repetition-tracker/models"
-	"github.com/georgmoe/repetition-tracker/responses"
 
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
@@ -23,21 +22,21 @@ func GetAllUsers(c *fiber.Ctx) error {
 
 	cursor, err := userCollection.Find(ctx, bson.M{})
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(responses.Response{Message: "error", Data: err.Error()})
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
 	}
 
 	defer cursor.Close(ctx)
 	for cursor.Next(ctx) {
 		var singleUser models.User
 		if err = cursor.Decode(&singleUser); err != nil {
-			return c.Status(http.StatusInternalServerError).JSON(responses.Response{Message: "error", Data: err.Error()})
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
 		}
 
 		users = append(users, singleUser)
 	}
 
 	return c.Status(http.StatusOK).JSON(
-		responses.Response{Message: "success", Data: users},
+		fiber.Map{"message": "success", "data": users},
 	)
 }
 
@@ -51,29 +50,29 @@ func GetAllUsers(c *fiber.Ctx) error {
 
 // 	err := userCollection.FindOne(ctx, bson.M{"id": objId}).Decode(&user)
 // 	if err != nil {
-// 		return c.Status(http.StatusInternalServerError).JSON(responses.Response{Message: "error", Data: err.Error()})
+// 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
 // 	}
 
-// 	return c.Status(http.StatusOK).JSON(responses.Response{Message: "success", Data: user})
+// 	return c.Status(http.StatusOK).JSON(fiber.Map{"message": "success", "data": user})
 // }
 
-func CreateUser(c *fiber.Ctx) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	var user models.User
-	defer cancel()
+// func CreateUser(c *fiber.Ctx) error {
+// 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+// 	var user models.User
+// 	defer cancel()
 
-	if err := c.BodyParser(&user); err != nil {
-		return c.Status(http.StatusBadRequest).JSON(responses.Response{Message: "error", Data: err.Error()})
-	}
+// 	if err := c.BodyParser(&user); err != nil {
+// 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"message": "error", "data": err.Error()})
+// 	}
 
-	user.CreatedAt = time.Now()
-	result, err := userCollection.InsertOne(ctx, user)
-	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(responses.Response{Message: "error", Data: err.Error()})
-	}
+// 	user.CreatedAt = time.Now()
+// 	result, err := userCollection.InsertOne(ctx, user)
+// 	if err != nil {
+// 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
+// 	}
 
-	return c.Status(http.StatusCreated).JSON(responses.Response{Message: "success", Data: result})
-}
+// 	return c.Status(http.StatusCreated).JSON(fiber.Map{"message": "success", "data": result})
+// }
 
 // func EditAUser(c *fiber.Ctx) error {
 // 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -85,7 +84,7 @@ func CreateUser(c *fiber.Ctx) error {
 
 // 	//validate the request body
 // 	if err := c.BodyParser(&user); err != nil {
-// 		return c.Status(http.StatusBadRequest).JSON(responses.Response{Message: "error", Data: err.Error()})
+// 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"message": "error", "data": err.Error()})
 // 	}
 
 // 	update := bson.M{"name": user.Name, "location": user.Location, "title": user.Title}
@@ -93,7 +92,7 @@ func CreateUser(c *fiber.Ctx) error {
 // 	result, err := userCollection.UpdateOne(ctx, bson.M{"id": objId}, bson.M{"$set": update})
 
 // 	if err != nil {
-// 		return c.Status(http.StatusInternalServerError).JSON(responses.Response{Message: "error", Data: err.Error()})
+// 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
 // 	}
 // 	//get updated user details
 // 	var updatedUser models.User
@@ -101,11 +100,11 @@ func CreateUser(c *fiber.Ctx) error {
 // 		err := userCollection.FindOne(ctx, bson.M{"id": objId}).Decode(&updatedUser)
 
 // 		if err != nil {
-// 			return c.Status(http.StatusInternalServerError).JSON(responses.Response{Message: "error", Data: err.Error()})
+// 			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
 // 		}
 // 	}
 
-// 	return c.Status(http.StatusOK).JSON(responses.Response{Message: "success", Data: updatedUser})
+// 	return c.Status(http.StatusOK).JSON(fiber.Map{"message": "success", "data": updatedUser})
 // }
 
 // func DeleteAUser(c *fiber.Ctx) error {
@@ -117,16 +116,16 @@ func CreateUser(c *fiber.Ctx) error {
 
 // 	result, err := userCollection.DeleteOne(ctx, bson.M{"id": objId})
 // 	if err != nil {
-// 		return c.Status(http.StatusInternalServerError).JSON(responses.Response{Message: "error", Data: err.Error()})
+// 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
 // 	}
 
 // 	if result.DeletedCount < 1 {
 // 		return c.Status(http.StatusNotFound).JSON(
-// 			responses.Response{Message: "error", Data: "User with specified ID not found!"},
+// 			fiber.Map{"message": "error", "data": "User with specified ID not found!"},
 // 		)
 // 	}
 
 // 	return c.Status(http.StatusOK).JSON(
-// 		responses.Response{Message: "success", Data: "User successfully deleted!"},
+// 		fiber.Map{"message": "success", "data": "User successfully deleted!"},
 // 	)
 // }

@@ -23,5 +23,5 @@ type Workout struct {
 	Name      string             `bson:"name, omitempty" json:"name"`
 	Date      time.Time          `bson:"date" json:"date"`
 	Exercises []Exercise         `bson:"exercises" json:"exercises"`
-	UserId    primitive.ObjectID `bson:"userId" json:"userId"`
+	UserId    primitive.ObjectID `bson:"userId" json:"-"`
 }
