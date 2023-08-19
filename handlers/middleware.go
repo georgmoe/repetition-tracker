@@ -4,10 +4,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func returnSessionAuth() func(c *fiber.Ctx) error {
-	return sessionAuth
-}
-
 func sessionAuth(c *fiber.Ctx) error {
 	sess, err := store.Get(c)
 	if err != nil {
