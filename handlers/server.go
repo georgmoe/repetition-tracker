@@ -23,7 +23,7 @@ func Setup() {
 	app.Post("/login", Login)
 	app.Post("/logout", Logout)
 
-	app.Use(returnSessionAuth())
+	app.Use(sessionAuth)
 
 	// run database
 	// configs.ConnectDB()
