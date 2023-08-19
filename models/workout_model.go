@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type Set struct {
 	Variation string    `bson:"variation,omitempty" json:"variation"` // Use of helpers like bands, or push up bars...
@@ -16,7 +20,8 @@ type Exercise struct {
 }
 
 type Workout struct {
-	Name      string     `bson:"name, omitempty" json:"name"`
-	Date      time.Time  `bson:"date" json:"date"`
-	Exercises []Exercise `bson:"exercises" json:"exercises"`
+	Name      string             `bson:"name, omitempty" json:"name"`
+	Date      time.Time          `bson:"date" json:"date"`
+	Exercises []Exercise         `bson:"exercises" json:"exercises"`
+	UserId    primitive.ObjectID `bson:"userId" json:"-"`
 }

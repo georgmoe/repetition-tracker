@@ -1,19 +1,7 @@
 package main
 
-import (
-	"github.com/georgmoe/repetition-tracker/routes"
-	"github.com/gofiber/fiber/v2"
-)
+import "github.com/georgmoe/repetition-tracker/handlers"
 
 func main() {
-	app := fiber.New()
-
-	//run database
-	// configs.ConnectDB()
-
-	//routes
-	routes.UserRouter(app)
-	routes.WorkoutRouter(app)
-
-	app.Listen(":8080")
+	handlers.Setup()
 }
