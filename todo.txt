@@ -1,65 +1,9 @@
-- wann von DB connecten und disconnecten (Einmal beim Start der App oder pro Aufruf?)
+Neue Sätze oder Übungen hinzufügen:
 
-Was soll gespeichert werden?
-- Satz
-- Runde
-- Übung
-- universelle Lösung?
+1) Wenn workout nicht ID mitgeschickt wird --> neues Workout anlegen
 
+2) Workout ID wird mitgeschickt UND es gibt einen Match bei workouts des Users:
+    - wenn letzte Übung mit geschickter Übung übereinstimmt wird der Satz in das Array eingefügt
+    - Ansonsten wird in dem Workout eine neue Übung angelegt
 
-
-sets oder circuits Das ist andere ist leer
---> ChatGPT fragen welcher begriff beides vereint
---> oder nur sets verwenden
---> in Übung Name + day (push, pull, leg) or type
-{
-    sets: [
-        [
-            {
-
-            },
-            {
-
-            },
-            {
-                
-            }
-        ],
-        [
-            {
-
-            },
-            {
-
-            },
-            {
-
-            }
-        ]
-    ],
-    circuits: [
-        [
-            {
-
-            },
-            {
-
-            },
-            {
-                
-            }
-        ],
-        [
-            {
-
-            },
-            {
-
-            },
-            {
-
-            }
-        ]
-    ]
-    
-}
+--> Umsetzung mit Upsert?
