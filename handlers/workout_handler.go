@@ -99,7 +99,17 @@ func GetSingleWorkout(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	// userId important to not get other users workouts!
-	filter := bson.D{{Key: "_id", Value: workoutId}, {Key: "userId", Value: userId}}
+	// filter := bson.D{{Key: "_id", Value: workoutId}, {Key: "userId", Value: userId}}
+	filter := bson.M{"_id": workoutId, "userId": userId}
+	// filter := bson.D{
+	// 	{Key: "$and",
+	// 		Value: bson.A{
+	// 			bson.D{{Key: "_id", Value: workoutId}},
+	// 			bson.D{{Key: "userId", Value: userId}},
+	// 		},
+	// 	},
+	// }
+
 	err = workoutCollection.FindOne(ctx, filter).Decode(&workout)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
