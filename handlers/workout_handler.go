@@ -9,6 +9,7 @@ import (
 	"github.com/georgmoe/repetition-tracker/models"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -52,7 +53,7 @@ func GetAllWorkouts(c *fiber.Ctx) error {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
 	}
 
-	// retrieve all workouts for the user
+	// retrieve all the users workouts
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -74,5 +75,37 @@ func GetAllWorkouts(c *fiber.Ctx) error {
 
 	return c.Status(http.StatusOK).JSON(
 		fiber.Map{"message": "success", "data": workouts},
+	)
+}
+
+func GetSingleWorkout(c *fiber.Ctx) error {
+	var workout models.Workout
+
+	// get primitive user id
+	userIdFromLocals := c.Locals(USER_ID)
+	userId, err := GetPrimitiveObjectIDFromInterface(userIdFromLocals)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
+	}
+
+	// get workout id from path
+	workoutIdStr := c.Params("workoutId")
+	workoutId, err := primitive.ObjectIDFromHex(workoutIdStr)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
+	}
+
+	// retrieve workout
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	// userId important to not get other users workouts!
+	filter := bson.D{{Key: "_id", Value: workoutId}, {Key: "userId", Value: userId}}
+	err = workoutCollection.FindOne(ctx, filter).Decode(&workout)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
+	}
+
+	return c.Status(http.StatusOK).JSON(
+		fiber.Map{"message": "success", "data": workout},
 	)
 }

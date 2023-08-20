@@ -34,6 +34,7 @@ func Setup() {
 
 	// workout routes
 	app.Get("/workout", GetAllWorkouts)
+	app.Get("/workout/:workoutId", GetSingleWorkout)
 	app.Post("/workout", CreateWorkout)
 
 	app.Listen(":8080")
