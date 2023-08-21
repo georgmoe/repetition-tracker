@@ -3,83 +3,18 @@ package handlers
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"time"
 
-	"github.com/georgmoe/repetition-tracker/configs"
 	"github.com/georgmoe/repetition-tracker/models"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var workoutCollection *mongo.Collection = configs.GetCollection(configs.DB, "workout")
-
-func PostWorkout(c *fiber.Ctx) error {
-	var workout models.Workout
-
-	// get primitive user id
-	userIdFromLocals := c.Locals(USER_ID)
-	userId, err := GetPrimitiveObjectIDFromInterface(userIdFromLocals)
-	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
-	}
-
-	// parse request body
-	if err := c.BodyParser(&workout); err != nil {
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"message": "error", "data": err.Error()})
-	}
-	workout.UserId = userId
-
-	// insert new workout
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	result, err := workoutCollection.InsertOne(ctx, workout)
-	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
-	}
-
-	return c.Status(http.StatusCreated).JSON(fiber.Map{"message": "success", "data": result})
-}
-
-func GetAllWorkouts(c *fiber.Ctx) error {
-	var workouts []models.Workout
-
-	// get primitive user id
-	userIdFromLocals := c.Locals(USER_ID)
-	userId, err := GetPrimitiveObjectIDFromInterface(userIdFromLocals)
-	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
-	}
-
-	// retrieve all the users workouts
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	filter := bson.D{{Key: "userId", Value: userId}}
-	cursor, err := workoutCollection.Find(ctx, filter)
-	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
-	}
-	defer cursor.Close(ctx)
-
-	for cursor.Next(ctx) {
-		var singleWorkout models.Workout
-		if err = cursor.Decode(&singleWorkout); err != nil {
-			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
-		}
-
-		workouts = append(workouts, singleWorkout)
-	}
-
-	return c.Status(http.StatusOK).JSON(
-		fiber.Map{"message": "success", "data": workouts},
-	)
-}
-
-func GetWorkout(c *fiber.Ctx) error {
-	var workout models.Workout
+func PostExercise(c *fiber.Ctx) error {
+	var exercise models.Exercise
 
 	// get primitive user id
 	userIdFromLocals := c.Locals(USER_ID)
@@ -95,25 +30,29 @@ func GetWorkout(c *fiber.Ctx) error {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
 	}
 
-	// retrieve workout
+	// parse request body
+	if err := c.BodyParser(&exercise); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"message": "error", "data": err.Error()})
+	}
+
+	// push exercise to array in workout
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	// userId important to not get other users workouts!
+
 	filter := bson.M{"_id": workoutId, "userId": userId}
-
-	err = workoutCollection.FindOne(ctx, filter).Decode(&workout)
+	update := bson.M{
+		"$push": bson.M{"exercises": exercise},
+	}
+	result, err := workoutCollection.UpdateOne(ctx, filter, update)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
 	}
 
-	return c.Status(http.StatusOK).JSON(
-		fiber.Map{"message": "success", "data": workout},
-	)
+	return c.Status(http.StatusCreated).JSON(fiber.Map{"message": "success", "data": result})
 }
 
-// Replace Workout with complete new Workout but keep workout ID
-func PutWorkout(c *fiber.Ctx) error {
-	var workout models.Workout
+func PutExercise(c *fiber.Ctx) error {
+	var exercise models.Exercise
 
 	// get primitive user id
 	userIdFromLocals := c.Locals(USER_ID)
@@ -129,22 +68,77 @@ func PutWorkout(c *fiber.Ctx) error {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
 	}
 
+	// get exercise index from path and check type integer
+	exerciseIdxStr := c.Params("exerciseIdx")
+	_, err = strconv.Atoi(exerciseIdxStr)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": "Exercise index must be of type integer!"})
+	}
+
 	// parse request body
-	if err := c.BodyParser(&workout); err != nil {
+	if err := c.BodyParser(&exercise); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"message": "error", "data": err.Error()})
 	}
-	workout.UserId = userId
-	workout.ID = workoutId
 
-	// replace workout operation
+	// update exercise at exerciseIdx
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	filter := bson.M{"_id": workoutId}
-	result, err := workoutCollection.ReplaceOne(ctx, filter, workout)
+	filter := bson.M{"_id": workoutId, "userId": userId}
+	update := bson.M{
+		"$set": bson.M{"exercises." + exerciseIdxStr: exercise},
+	}
+	result, err := workoutCollection.UpdateOne(ctx, filter, update)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
 	}
 
 	return c.Status(http.StatusCreated).JSON(fiber.Map{"message": "success", "data": result})
+}
+
+func GetExercise(c *fiber.Ctx) error {
+	var exercise models.Exercise
+
+	// get primitive user id
+	userIdFromLocals := c.Locals(USER_ID)
+	userId, err := GetPrimitiveObjectIDFromInterface(userIdFromLocals)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
+	}
+
+	// get workout id from path
+	workoutIdStr := c.Params("workoutId")
+	workoutId, err := primitive.ObjectIDFromHex(workoutIdStr)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
+	}
+
+	// get exercise index from path and check type integer
+	exerciseIdxStr := c.Params("exerciseIdx")
+	_, err = strconv.Atoi(exerciseIdxStr)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": "Exercise index must be of type integer!"})
+	}
+
+	// parse request body
+	if err := c.BodyParser(&exercise); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"message": "error", "data": err.Error()})
+	}
+
+	// find exercise
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	filter := bson.M{"_id": workoutId, "userId": userId}
+	// only return the specified exercise using projection
+	opts := options.FindOne().SetProjection(bson.M{"exercises." + exerciseIdxStr: 1})
+
+	err = workoutCollection.FindOne(ctx, filter, opts).Decode(&exercise)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
+	}
+
+	return c.Status(http.StatusOK).JSON(
+		fiber.Map{"message": "success", "data": exercise},
+	)
 }

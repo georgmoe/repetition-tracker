@@ -34,9 +34,16 @@ func Setup() {
 
 	// workout routes
 	app.Get("/workout", GetAllWorkouts)
-	app.Get("/workout/:workoutId", GetSingleWorkout)
-	app.Post("/workout", CreateWorkout)
+	app.Get("/workout/:workoutId", GetWorkout)
+	app.Post("/workout", PostWorkout)
 	app.Put("/workout/:workoutId", PutWorkout)
+
+	app.Post("/workout/:workoutId/exercise", PostExercise)
+	app.Put("/workout/:workoutId/exercise/:exerciseIdx", PutExercise)
+	app.Get("/workout/:workoutId/exercise/:exerciseIdx", GetExercise)
+
+	// app.Post("/workout/:workoutId/exercise/:exerciseIdx", PostSet)
+	// app.Put("/workout/:workoutId/exercise/:exerciseIdx/set/:setIdx", Put)
 
 	app.Listen(":8080")
 }
