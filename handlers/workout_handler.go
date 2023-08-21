@@ -119,3 +119,46 @@ func GetSingleWorkout(c *fiber.Ctx) error {
 		fiber.Map{"message": "success", "data": workout},
 	)
 }
+
+// Replace Workout with complete new Workout but keep workout ID
+func PutWorkout(c *fiber.Ctx) error {
+	var workout models.Workout
+
+	// get primitive user id
+	userIdFromLocals := c.Locals(USER_ID)
+	userId, err := GetPrimitiveObjectIDFromInterface(userIdFromLocals)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
+	}
+
+	// get workout id from path
+	workoutIdStr := c.Params("workoutId")
+	workoutId, err := primitive.ObjectIDFromHex(workoutIdStr)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
+	}
+
+	// parse request body
+	if err := c.BodyParser(&workout); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"message": "error", "data": err.Error()})
+	}
+	workout.UserId = userId
+	workout.ID = workoutId
+
+	// replace workout operation
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	filter := bson.M{"_id": workoutId}
+	result, err := workoutCollection.ReplaceOne(ctx, filter, workout)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
+	}
+
+	return c.Status(http.StatusCreated).JSON(fiber.Map{"message": "success", "data": result})
+}
+
+// receive a set and append to existing workout
+// func PatchWorkout(c *fiber.Ctx) error {
+
+// }
