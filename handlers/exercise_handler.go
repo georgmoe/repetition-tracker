@@ -10,7 +10,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func PostExercise(c *fiber.Ctx) error {
@@ -97,7 +96,7 @@ func PutExercise(c *fiber.Ctx) error {
 }
 
 func GetExercise(c *fiber.Ctx) error {
-	var exercise models.Exercise
+	var workout models.Workout
 
 	// get primitive user id
 	userIdFromLocals := c.Locals(USER_ID)
@@ -115,27 +114,28 @@ func GetExercise(c *fiber.Ctx) error {
 
 	// get exercise index from path and check type integer
 	exerciseIdxStr := c.Params("exerciseIdx")
-	_, err = strconv.Atoi(exerciseIdxStr)
+	exerciseIdx, err := strconv.Atoi(exerciseIdxStr)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": "Exercise index must be of type integer!"})
 	}
 
-	// parse request body
-	if err := c.BodyParser(&exercise); err != nil {
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"message": "error", "data": err.Error()})
-	}
-
-	// find exercise
+	// find workout
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	filter := bson.M{"_id": workoutId, "userId": userId}
-	// only return the specified exercise using projection
-	opts := options.FindOne().SetProjection(bson.M{"exercises." + exerciseIdxStr: 1})
-
-	err = workoutCollection.FindOne(ctx, filter, opts).Decode(&exercise)
+	err = workoutCollection.FindOne(ctx, filter).Decode(&workout)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
+	}
+
+	// check valid exercise index and get exercise
+	var exercise models.Exercise
+
+	if exerciseIdx >= 0 && exerciseIdx < len(workout.Exercises) {
+		exercise = workout.Exercises[exerciseIdx]
+	} else {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": "exercise index out of range"})
 	}
 
 	return c.Status(http.StatusOK).JSON(

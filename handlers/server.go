@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
+	"github.com/gofiber/storage/redis/v3"
 )
 
 var (
@@ -13,7 +14,9 @@ var (
 
 func Setup() {
 	app := fiber.New()
+	storage := redis.New()
 	store = session.New(session.Config{
+		Storage:        storage,
 		CookieSecure:   true,
 		CookieHTTPOnly: true,
 	})
