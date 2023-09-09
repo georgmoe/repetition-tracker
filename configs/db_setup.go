@@ -6,11 +6,12 @@ import (
 	"log"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func ConnectDB() *mongo.Client {
+func ConnectMongo() *mongo.Client {
 	client, err := mongo.NewClient(options.Client().ApplyURI(EnvMongoURI()))
 	if err != nil {
 		log.Fatal(err)
@@ -33,10 +34,22 @@ func ConnectDB() *mongo.Client {
 }
 
 // Client instance
-var DB *mongo.Client = ConnectDB()
+var DB *mongo.Client = ConnectMongo()
 
 // getting database collections
 func GetCollection(client *mongo.Client, collectionName string) *mongo.Collection {
 	collection := client.Database("repetition-tracker").Collection(collectionName)
 	return collection
+}
+
+var Redis *redis.Client = ConnectRedis()
+
+func ConnectRedis() *redis.Client {
+	client := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+	fmt.Println("Connected to Redis")
+	return client
 }
