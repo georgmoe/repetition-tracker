@@ -20,6 +20,7 @@ type Exercise struct {
 }
 
 type Workout struct {
+	ID        primitive.ObjectID `bson:"_id" json:"id"`
 	Name      string             `bson:"name, omitempty" json:"name"`
 	Date      time.Time          `bson:"date" json:"date"`
 	Exercises []Exercise         `bson:"exercises" json:"exercises"`
