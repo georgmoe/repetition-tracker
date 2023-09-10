@@ -193,7 +193,7 @@ func GetSet(c *fiber.Ctx) error {
 
 	// check if really only one result come from the aggregation pipeline
 	if cursor.TryNext(ctx) {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": "query resulted in multiple exercises"})
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": "query resulted in multiple sets"})
 	}
 
 	return c.Status(http.StatusOK).JSON(
