@@ -1,6 +1,7 @@
 package configs
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -12,6 +13,9 @@ func EnvMongoURI() string {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+	mongoUser := os.Getenv("MONGOUSER")
+	mongoPass := os.Getenv("MONGOPASS")
+	mongoPort := os.Getenv("MONGOPORT")
 
-	return os.Getenv("MONGOURI")
+	return fmt.Sprintf("mongodb://%v:%v@localhost:%v", mongoUser, mongoPass, mongoPort)
 }

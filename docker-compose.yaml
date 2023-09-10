@@ -2,7 +2,7 @@ services:
   mongo:
     image: "mongo"
     ports:
-      - "27019:27017"
+      - "${MONGOPORT}:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: "${MONGOUSER}"
       MONGO_INITDB_ROOT_PASSWORD: "${MONGOPASS}"
