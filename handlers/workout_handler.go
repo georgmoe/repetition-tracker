@@ -30,6 +30,7 @@ func PostWorkout(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"message": "error", "data": err.Error()})
 	}
 	workout.UserId = userId
+	workout.ID = primitive.NewObjectID()
 
 	// insert new workout
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

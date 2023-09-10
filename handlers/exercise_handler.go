@@ -96,7 +96,7 @@ func PutExercise(c *fiber.Ctx) error {
 }
 
 func GetExercise(c *fiber.Ctx) error {
-	var workout models.Workout
+	var exercise models.Exercise
 
 	// get primitive user id
 	userIdFromLocals := c.Locals(USER_ID)
@@ -119,23 +119,51 @@ func GetExercise(c *fiber.Ctx) error {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": "Exercise index must be of type integer!"})
 	}
 
-	// find workout
+	// pipeline for an aggregation operation to find the exercise at the specified index
+	pipeline := bson.A{
+		// 1st stage: find the user's workout document
+		bson.M{
+			"$match": bson.M{
+				"_id":    workoutId,
+				"userId": userId,
+			},
+		},
+		// 2nd stage: use projection to get the specified exercise in a new field "exercise"
+		bson.M{
+			"$project": bson.M{
+				"exercise": bson.M{
+					"$arrayElemAt": bson.A{"$exercises", exerciseIdx},
+				},
+			},
+		},
+		// 3rd stage: make exercise the root to not have the unnecessary "exercise" key
+		bson.M{
+			"$replaceRoot": bson.M{
+				"newRoot": "$exercise",
+			},
+		},
+	}
+
+	// execute aggregation operation
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	filter := bson.M{"_id": workoutId, "userId": userId}
-	err = workoutCollection.FindOne(ctx, filter).Decode(&workout)
+	cursor, err := workoutCollection.Aggregate(ctx, pipeline)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
 	}
+	defer cursor.Close(ctx)
 
-	// check valid exercise index and get exercise
-	var exercise models.Exercise
+	// decode exercise
+	if cursor.Next(ctx) {
+		if err := cursor.Decode(&exercise); err != nil {
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": err.Error()})
+		}
+	}
 
-	if exerciseIdx >= 0 && exerciseIdx < len(workout.Exercises) {
-		exercise = workout.Exercises[exerciseIdx]
-	} else {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": "exercise index out of range"})
+	// check if really only one result come from the aggregation pipeline
+	if cursor.TryNext(ctx) {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "error", "data": "query resulted in multiple exercises"})
 	}
 
 	return c.Status(http.StatusOK).JSON(

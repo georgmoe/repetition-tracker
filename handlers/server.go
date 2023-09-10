@@ -14,6 +14,8 @@ var (
 
 func Setup() {
 	app := fiber.New()
+
+	// session storage
 	storage := redis.New()
 	store = session.New(session.Config{
 		Storage:        storage,
@@ -45,7 +47,7 @@ func Setup() {
 	app.Put("/workout/:workoutId/exercise/:exerciseIdx", PutExercise)
 	app.Get("/workout/:workoutId/exercise/:exerciseIdx", GetExercise)
 
-	app.Post("/workout/:workoutId/exercise/:exerciseIdx", PostSet)
+	app.Post("/workout/:workoutId/exercise/:exerciseIdx/set", PostSet)
 	app.Put("/workout/:workoutId/exercise/:exerciseIdx/set/:setIdx", PutSet)
 	app.Get("/workout/:workoutId/exercise/:exerciseIdx/set/:setIdx", GetSet)
 
